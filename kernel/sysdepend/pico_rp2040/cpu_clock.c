@@ -117,6 +117,9 @@ EXPORT void startup_clock(ATR clkatr)
 
 	out_w(CLK_SYS+CLK_x_DIV, div);
 
+	// FIX: Sync the hardware timer tick to 1 microsecond (12MHz / 12)
+	out_w(0x4005802C, (XOSC_MHz | (1 << 9)));
+
 	/* CLK PERI (UART+SPI) settings */
 	if(clkatr & CLKATR_PREI) {
 		clock_config( CLK_KIND_PERI, CLK_PERI_SRC, CLK_PLL_SYS_FREQ, CLK_PERI_FREQ);
