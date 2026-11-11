@@ -33,10 +33,10 @@ makes the timer behave consistently after cold starts.
 conditions and the counter output should now arrive roughly every **38.8 seconds**, 
 even though it should be appearing once every second.
 
-![Correct output](correct_output.png)
+![Correct output](correct_output.png) <br>
 ^ Correct output where each counter output appears once every second (~10 ticks)
 
-![Incorrect output](incorrect_output.png)
+![Incorrect output](incorrect_output.png) <br>
 ^ Incorrect output where the slower clock causes each output to appear every ~38.8 seconds.
 
 The counter task in
