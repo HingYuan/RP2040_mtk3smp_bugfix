@@ -281,7 +281,7 @@ endif
 
 ifeq ($(CONSOLE),usb_cdc)
 
-PICO_SDK_PATH ?= ../../sdk/pico-sdk
+PICO_SDK_PATH ?= ../../pico-sdk
 TINYUSB_PATH := $(PICO_SDK_PATH)/lib/tinyusb
 
 ifeq ($(wildcard $(TINYUSB_PATH)/src/tusb.c),)

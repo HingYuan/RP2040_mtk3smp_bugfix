@@ -47,6 +47,7 @@
 
 #include "usb_console_compat.h"
 #include "demo_tasks.h"
+#include "counter_task.h"
 
 #if TM_WIFI_CYW43
 /* Plain C types on purpose - see the note in cyw43_utk.h. */
@@ -419,71 +420,78 @@ LOCAL T_CTSK ctsk_wifi = {
  *  Task and object definitions
  * ------------------------------------------------------------------ */
 
-LOCAL T_CTSK ctsk_producer = {
-	.itskpri	= 5,
+// LOCAL T_CTSK ctsk_producer = {
+// 	.itskpri	= 5,
+// 	.stksz		= STACK_SZ,
+// 	.task		= producer_task,
+// #if TK_SUPPORT_SMP
+// 	.tskatr		= TA_HLNG | TA_RNG3 | TA_ASSPRC,
+// 	.assprc		= TP_PRC1,
+// #else
+// 	.tskatr		= TA_HLNG | TA_RNG3,
+// #endif
+// };
+
+// LOCAL T_CTSK ctsk_consumer = {
+// 	.itskpri	= 6,
+// 	.stksz		= STACK_SZ,
+// 	.task		= consumer_task,
+// #if TK_SUPPORT_SMP
+// 	.tskatr		= TA_HLNG | TA_RNG3 | TA_ASSPRC,
+// 	.assprc		= TP_PRC2,
+// #else
+// 	.tskatr		= TA_HLNG | TA_RNG3,
+// #endif
+// };
+
+// LOCAL T_CTSK ctsk_monitor = {
+// 	.itskpri	= 7,
+// 	.stksz		= STACK_SZ,
+// 	.task		= monitor_task,
+// 	.tskatr		= TA_HLNG | TA_RNG3,
+// };
+
+// LOCAL T_CTSK ctsk_blink = {
+// 	.itskpri	= 10,
+// 	.stksz		= STACK_SZ,
+// 	.task		= blink_task,
+// 	.tskatr		= TA_HLNG | TA_RNG3,
+// };
+
+// LOCAL T_CMPF cmpf = {
+// 	.mpfatr		= TA_TFIFO | TA_RNG3,
+// 	.mpfcnt		= N_RECORDS,
+// 	.blfsz		= sizeof(RECORD),
+// 	.bufptr		= mpf_buf,
+// };
+
+// LOCAL T_CMTX cmtx = {
+// 	.mtxatr		= TA_TFIFO | TA_INHERIT,
+// };
+
+// LOCAL T_CMBF cmbf = {
+// 	.mbfatr		= TA_TFIFO,
+// 	.bufsz		= sizeof mbf_buf,
+// 	.maxmsz		= sizeof(RECORD),
+// 	.bufptr		= mbf_buf,
+// };
+
+// LOCAL T_CSEM csem = {
+// 	.sematr		= TA_TFIFO,
+// 	.isemcnt	= CREDITS,
+// 	.maxsem		= CREDITS,
+// };
+
+// LOCAL T_CFLG cflg = {
+// 	.flgatr		= TA_TFIFO | TA_WMUL,
+// 	.iflgptn	= 0,
+// };
+
+LOCAL T_CTSK ctsk_counter = {
+	.itskpri	= 1,
 	.stksz		= STACK_SZ,
-	.task		= producer_task,
-#if TK_SUPPORT_SMP
-	.tskatr		= TA_HLNG | TA_RNG3 | TA_ASSPRC,
-	.assprc		= TP_PRC1,
-#else
+	.task		= counter_task,
 	.tskatr		= TA_HLNG | TA_RNG3,
-#endif
-};
-
-LOCAL T_CTSK ctsk_consumer = {
-	.itskpri	= 6,
-	.stksz		= STACK_SZ,
-	.task		= consumer_task,
-#if TK_SUPPORT_SMP
-	.tskatr		= TA_HLNG | TA_RNG3 | TA_ASSPRC,
-	.assprc		= TP_PRC2,
-#else
-	.tskatr		= TA_HLNG | TA_RNG3,
-#endif
-};
-
-LOCAL T_CTSK ctsk_monitor = {
-	.itskpri	= 7,
-	.stksz		= STACK_SZ,
-	.task		= monitor_task,
-	.tskatr		= TA_HLNG | TA_RNG3,
-};
-
-LOCAL T_CTSK ctsk_blink = {
-	.itskpri	= 10,
-	.stksz		= STACK_SZ,
-	.task		= blink_task,
-	.tskatr		= TA_HLNG | TA_RNG3,
-};
-
-LOCAL T_CMPF cmpf = {
-	.mpfatr		= TA_TFIFO | TA_RNG3,
-	.mpfcnt		= N_RECORDS,
-	.blfsz		= sizeof(RECORD),
-	.bufptr		= mpf_buf,
-};
-
-LOCAL T_CMTX cmtx = {
-	.mtxatr		= TA_TFIFO | TA_INHERIT,
-};
-
-LOCAL T_CMBF cmbf = {
-	.mbfatr		= TA_TFIFO,
-	.bufsz		= sizeof mbf_buf,
-	.maxmsz		= sizeof(RECORD),
-	.bufptr		= mbf_buf,
-};
-
-LOCAL T_CSEM csem = {
-	.sematr		= TA_TFIFO,
-	.isemcnt	= CREDITS,
-	.maxsem		= CREDITS,
-};
-
-LOCAL T_CFLG cflg = {
-	.flgatr		= TA_TFIFO | TA_WMUL,
-	.iflgptn	= 0,
 };
 
 /* ------------------------------------------------------------------ *
@@ -505,16 +513,8 @@ EXPORT INT usermain(void)
 {
 	ID	tid;
 
-	mpfid = tk_cre_mpf(&cmpf); if(!made("mpf", mpfid)) return 1;
-	mtxid = tk_cre_mtx(&cmtx); if(!made("mtx", mtxid)) return 1;
-	mbfid = tk_cre_mbf(&cmbf); if(!made("mbf", mbfid)) return 1;
-	semid = tk_cre_sem(&csem); if(!made("sem", semid)) return 1;
-	flgid = tk_cre_flg(&cflg); if(!made("flg", flgid)) return 1;
+	tid = tk_cre_tsk(&ctsk_counter); if(made("tsk(counter)", tid)) tk_sta_tsk(tid, 0);
 
-	tid = tk_cre_tsk(&ctsk_blink);    if(made("tsk(blink)",    tid)) tk_sta_tsk(tid, 0);
-	tid = tk_cre_tsk(&ctsk_monitor);  if(made("tsk(monitor)",  tid)) tk_sta_tsk(tid, 0);
-	tid = tk_cre_tsk(&ctsk_consumer); if(made("tsk(consumer)", tid)) tk_sta_tsk(tid, 0);
-	tid = tk_cre_tsk(&ctsk_producer); if(made("tsk(producer)", tid)) tk_sta_tsk(tid, 0);
 #if TM_WIFI_CYW43
 	tid = tk_cre_tsk(&ctsk_wifi);     if(made("tsk(wifi)",     tid)) tk_sta_tsk(tid, 0);
 #endif
