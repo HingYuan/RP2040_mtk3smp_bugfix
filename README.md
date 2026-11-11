@@ -6,8 +6,7 @@ hardware timer to advance in microseconds. With the timer tick setup line
 disabled, the counter task can appear to work after some starts, but after a
 cold start its one-second reports may arrive only about every 38.8 seconds.
 
-Enabling the tick setup line in
-[`kernel/sysdepend/pico_rp2040/cpu_clock.c`](kernel/sysdepend/pico_rp2040/cpu_clock.c)
+Enabling the tick setup line in [`kernel/sysdepend/pico_rp2040/cpu_clock.c`](kernel/sysdepend/pico_rp2040/cpu_clock.c) line 121 
 makes the timer behave consistently after cold starts.
 
 ## Reproduce the issue
@@ -30,9 +29,9 @@ makes the timer behave consistently after cold starts.
    enter its bootloader, then copy the UF2 to the `RPI-RP2` drive.
 4. Start the board and observe the counter output. It should initially print
    about once per second.
-5. Fully remove power using the Pico's power switch or by disconnecting its
-   power, then power it on again. Do not just press reset. The counter output
-   should now arrive roughly every **38.8 seconds**.
+5. Flip the pico's power switch off and on again. This creates the cold start 
+conditions and the counter output should now arrive roughly every **38.8 seconds**, 
+even though it should be appearing once every second.
 
 The counter task in
 [`app_program/counter_task.c`](app_program/counter_task.c) reads the RP2040
